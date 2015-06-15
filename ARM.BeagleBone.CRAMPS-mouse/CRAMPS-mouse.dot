@@ -1,0 +1,159 @@
+digraph net {
+    node [shape=record];
+    sig_emcmot_00_enable [shape=diamond, label="emcmot.00.enable"]
+    sig_emcmot_00_pos_cmd [shape=diamond, label="emcmot.00.pos-cmd"]
+    sig_motor_00_pos_fb [shape=diamond, label="motor.00.pos-fb"]
+    sig_emcmot_01_enable [shape=diamond, label="emcmot.01.enable"]
+    sig_emcmot_01_pos_cmd [shape=diamond, label="emcmot.01.pos-cmd"]
+    sig_motor_01_pos_fb [shape=diamond, label="motor.01.pos-fb"]
+    sig_emcmot_02_enable [shape=diamond, label="emcmot.02.enable"]
+    sig_emcmot_02_pos_cmd [shape=diamond, label="emcmot.02.pos-cmd"]
+    sig_motor_02_pos_fb [shape=diamond, label="motor.02.pos-fb"]
+    sig_emcmot_03_enable [shape=diamond, label="emcmot.03.enable"]
+    sig_emcmot_03_pos_cmd [shape=diamond, label="emcmot.03.pos-cmd"]
+    sig_motor_03_pos_fb [shape=diamond, label="motor.03.pos-fb"]
+    sig_estop_out [shape=diamond, label="estop-out"]
+    sig_estop_loop [shape=diamond, label="estop-loop"]
+    sig_tool_prep_loop [shape=diamond, label="tool-prep-loop"]
+    sig_tool_change_loop [shape=diamond, label="tool-change-loop"]
+    sig_limit_x_min [shape=diamond, label="limit-x-min"]
+    sig_limit_x_max [shape=diamond, label="limit-x-max"]
+    sig_limit_y_min [shape=diamond, label="limit-y-min"]
+    sig_limit_y_max [shape=diamond, label="limit-y-max"]
+    sig_limit_z_min [shape=diamond, label="limit-z-min"]
+    sig_limit_z_max [shape=diamond, label="limit-z-max"]
+    sig_eMMC_disabled [shape=diamond, label="eMMC-disabled"]
+    sig_servo_1 [shape=diamond, label="servo.1"]
+    sig_servo_2 [shape=diamond, label="servo.2"]
+    sig_servo_3 [shape=diamond, label="servo.3"]
+    sig_servo_4 [shape=diamond, label="servo.4"]
+    sig_e0_temp_meas [shape=diamond, label="e0.temp.meas"]
+    sig_e0_temp_set [shape=diamond, label="e0.temp.set"]
+    sig_e0_heater [shape=diamond, label="e0.heater"]
+    sig_e0_heaterl [shape=diamond, label="e0.heaterl"]
+    sig_bed_temp_meas [shape=diamond, label="bed.temp.meas"]
+    sig_bed_temp_set [shape=diamond, label="bed.temp.set"]
+    sig_bed_heater [shape=diamond, label="bed.heater"]
+    sig_bed_heaterl [shape=diamond, label="bed.heaterl"]
+    sig_check_program_run [shape=diamond, label="check.program.run"]
+    sig_check_program_idle [shape=diamond, label="check.program.idle"]
+    sig_check_program_pause [shape=diamond, label="check.program.pause"]
+    sig_pause [shape=diamond, label="pause"]
+    sig_encoderValue [shape=diamond, label="encoderValue"]
+    sig_offsetx [shape=diamond, label="offsetx"]
+    sig_offsety [shape=diamond, label="offsety"]
+    sig_emcjoint_00_pos_cmd [shape=diamond, label="emcjoint.00.pos-cmd"]
+    sig_emcjoint_01_pos_cmd [shape=diamond, label="emcjoint.01.pos-cmd"]
+    sig_emcjoint_02_pos_cmd [shape=diamond, label="emcjoint.02.pos-cmd"]
+    sig_emcjoint_03_pos_cmd [shape=diamond, label="emcjoint.03.pos-cmd"]
+    sig_check_program_line [shape=diamond, label="check.program-line"]
+
+    e_check_0 [label="<e_check_0>e-check.0|<cmd_a>cmd-a|<cmd_x>cmd-x|<cmd_y>cmd-y|<cmd_z>cmd-z|<encoder_position>encoder-position|<isidle>isidle|<ispause>ispause|<isrunning>isrunning|<offset_x>offset-x|<offset_y>offset-y|<pause>pause|<program_line>program-line"];
+    Therm_ch_05 [label="<Therm_ch_05>Therm.ch-05|<value>value"];
+    Therm_ch_04 [label="<Therm_ch_04>Therm.ch-04|<value>value"];
+    halui_program [label="<halui_program>halui.program|<is_idle>is-idle|<is_paused>is-paused|<is_running>is-running|<pause>pause"];
+    hpg_pwmgen_00_out_01 [label="<hpg_pwmgen_00_out_01>hpg.pwmgen.00.out.01|<value>value"];
+    hpg_pwmgen_00_out_00 [label="<hpg_pwmgen_00_out_00>hpg.pwmgen.00.out.00|<value>value"];
+    pid_0 [label="<pid_0>pid.0|<command>command|<feedback>feedback|<output>output"];
+    pid_1 [label="<pid_1>pid.1|<command>command|<feedback>feedback|<output>output"];
+    axis_3 [label="<axis_3>axis.3|<amp_enable_out>amp-enable-out|<joint_pos_cmd>joint-pos-cmd|<motor_pos_cmd>motor-pos-cmd|<motor_pos_fb>motor-pos-fb"];
+    axis_2 [label="<axis_2>axis.2|<amp_enable_out>amp-enable-out|<joint_pos_cmd>joint-pos-cmd|<motor_pos_cmd>motor-pos-cmd|<motor_pos_fb>motor-pos-fb"];
+    axis_1 [label="<axis_1>axis.1|<amp_enable_out>amp-enable-out|<joint_pos_cmd>joint-pos-cmd|<motor_pos_cmd>motor-pos-cmd|<motor_pos_fb>motor-pos-fb"];
+    axis_0 [label="<axis_0>axis.0|<amp_enable_out>amp-enable-out|<joint_pos_cmd>joint-pos-cmd|<motor_pos_cmd>motor-pos-cmd|<motor_pos_fb>motor-pos-fb"];
+    limit1_0 [label="<limit1_0>limit1.0|<in>in|<out>out"];
+    limit1_1 [label="<limit1_1>limit1.1|<in>in|<out>out"];
+    iocontrol_0 [label="<iocontrol_0>iocontrol.0|<emc_enable_in>emc-enable-in|<tool_change>tool-change|<tool_changed>tool-changed|<tool_prepare>tool-prepare|<tool_prepared>tool-prepared|<user_enable_out>user-enable-out"];
+    motion [label="<motion>motion|<pause_offset_a>pause-offset-a|<pause_offset_b>pause-offset-b|<program_line>program-line"];
+    bb_gpio_p8 [label="<bb_gpio_p8>bb_gpio.p8|<in_07>in-07|<in_08>in-08|<in_09>in-09|<in_10>in-10|<in_17>in-17|<out_16>out-16|<out_22>out-22|<out_23>out-23|<out_24>out-24|<out_25>out-25|<out_26>out-26"];
+    bb_gpio_p9 [label="<bb_gpio_p9>bb_gpio.p9|<in_11>in-11|<in_13>in-13|<out_14>out-14|<out_23>out-23|<out_25>out-25"];
+    hpg_stepgen_03 [label="<hpg_stepgen_03>hpg.stepgen.03|<enable>enable|<position_cmd>position-cmd|<position_fb>position-fb"];
+    hpg_stepgen_02 [label="<hpg_stepgen_02>hpg.stepgen.02|<enable>enable|<position_cmd>position-cmd|<position_fb>position-fb"];
+    hpg_stepgen_01 [label="<hpg_stepgen_01>hpg.stepgen.01|<enable>enable|<position_cmd>position-cmd|<position_fb>position-fb"];
+    hpg_stepgen_00 [label="<hpg_stepgen_00>hpg.stepgen.00|<enable>enable|<position_cmd>position-cmd|<position_fb>position-fb"];
+    input_0 [label="<input_0>input.0|<rel_wheel_position>rel-wheel-position"];
+
+    sig_emcmot_00_pos_cmd -> hpg_stepgen_00:position_cmd [ dir=forward , weight=1 ] ;
+    sig_eMMC_disabled -> bb_gpio_p8:out_16 [ dir=none , weight=2 ] ;
+    motion:pause_offset_b -> sig_offsety [ dir=forward , weight=3 ] ;
+    iocontrol_0:tool_change -> sig_tool_change_loop [ dir=forward , weight=3 ] ;
+    sig_emcjoint_02_pos_cmd -> e_check_0:cmd_z [ dir=forward , weight=1 ] ;
+    input_0:rel_wheel_position -> sig_encoderValue [ dir=forward , weight=3 ] ;
+    Therm_ch_05:value -> sig_bed_temp_meas [ dir=forward , weight=3 ] ;
+    axis_2:motor_pos_cmd -> sig_emcmot_02_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_emcjoint_00_pos_cmd -> e_check_0:cmd_x [ dir=forward , weight=1 ] ;
+    sig_tool_prep_loop -> iocontrol_0:tool_prepared [ dir=forward , weight=1 ] ;
+    sig_emcjoint_03_pos_cmd -> e_check_0:cmd_a [ dir=forward , weight=1 ] ;
+    bb_gpio_p8:in_10 -> sig_limit_y_min [ dir=forward , weight=3 ] ;
+    axis_0:joint_pos_cmd -> sig_emcjoint_00_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_e0_temp_set -> pid_0:command [ dir=forward , weight=1 ] ;
+    sig_emcmot_00_enable -> bb_gpio_p9:out_23 [ dir=forward , weight=1 ] ;
+    hpg_stepgen_03:position_fb -> sig_motor_03_pos_fb [ dir=forward , weight=3 ] ;
+    motion:pause_offset_a -> sig_offsetx [ dir=forward , weight=3 ] ;
+    sig_servo_1 -> bb_gpio_p8:out_25 [ dir=none , weight=2 ] ;
+    sig_motor_03_pos_fb -> axis_3:motor_pos_fb [ dir=forward , weight=1 ] ;
+    bb_gpio_p8:in_07 -> sig_limit_x_max [ dir=forward , weight=3 ] ;
+    sig_encoderValue -> e_check_0:encoder_position [ dir=forward , weight=1 ] ;
+    halui_program:is_idle -> sig_check_program_idle [ dir=forward , weight=3 ] ;
+    sig_check_program_line -> e_check_0:program_line [ dir=forward , weight=1 ] ;
+    sig_tool_change_loop -> iocontrol_0:tool_changed [ dir=forward , weight=1 ] ;
+    sig_bed_temp_set -> pid_1:command [ dir=forward , weight=1 ] ;
+    sig_emcmot_00_enable -> bb_gpio_p9:out_14 [ dir=forward , weight=1 ] ;
+    axis_1:amp_enable_out -> sig_emcmot_01_enable [ dir=forward , weight=3 ] ;
+    axis_0:motor_pos_cmd -> sig_emcmot_00_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_motor_01_pos_fb -> axis_1:motor_pos_fb [ dir=forward , weight=1 ] ;
+    halui_program:is_running -> sig_check_program_run [ dir=forward , weight=3 ] ;
+    sig_emcmot_01_pos_cmd -> hpg_stepgen_01:position_cmd [ dir=forward , weight=1 ] ;
+    sig_emcjoint_01_pos_cmd -> e_check_0:cmd_y [ dir=forward , weight=1 ] ;
+    iocontrol_0:tool_prepare -> sig_tool_prep_loop [ dir=forward , weight=3 ] ;
+    sig_check_program_pause -> e_check_0:ispause [ dir=forward , weight=1 ] ;
+    bb_gpio_p8:in_17 -> sig_estop_loop [ dir=forward , weight=3 ] ;
+    axis_3:joint_pos_cmd -> sig_emcjoint_03_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_motor_02_pos_fb -> axis_2:motor_pos_fb [ dir=forward , weight=1 ] ;
+    iocontrol_0:user_enable_out -> sig_estop_out [ dir=forward , weight=3 ] ;
+    sig_estop_out -> bb_gpio_p8:out_26 [ dir=forward , weight=1 ] ;
+    sig_bed_heater -> limit1_1:in [ dir=forward , weight=1 ] ;
+    sig_pause -> halui_program:pause [ dir=forward , weight=1 ] ;
+    axis_2:joint_pos_cmd -> sig_emcjoint_02_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_e0_heaterl -> hpg_pwmgen_00_out_01:value [ dir=forward , weight=1 ] ;
+    axis_1:joint_pos_cmd -> sig_emcjoint_01_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_offsetx -> e_check_0:offset_x [ dir=forward , weight=1 ] ;
+    limit1_1:out -> sig_bed_heaterl [ dir=forward , weight=3 ] ;
+    sig_e0_heater -> limit1_0:in [ dir=forward , weight=1 ] ;
+    sig_offsety -> e_check_0:offset_y [ dir=forward , weight=1 ] ;
+    sig_emcmot_00_enable -> bb_gpio_p9:out_25 [ dir=forward , weight=1 ] ;
+    axis_2:amp_enable_out -> sig_emcmot_02_enable [ dir=forward , weight=3 ] ;
+    sig_bed_temp_meas -> pid_1:feedback [ dir=forward , weight=1 ] ;
+    sig_emcmot_02_pos_cmd -> hpg_stepgen_02:position_cmd [ dir=forward , weight=1 ] ;
+    sig_check_program_run -> e_check_0:isrunning [ dir=forward , weight=1 ] ;
+    bb_gpio_p8:in_08 -> sig_limit_x_min [ dir=forward , weight=3 ] ;
+    axis_3:motor_pos_cmd -> sig_emcmot_03_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_check_program_idle -> e_check_0:isidle [ dir=forward , weight=1 ] ;
+    sig_estop_loop -> iocontrol_0:emc_enable_in [ dir=forward , weight=1 ] ;
+    sig_emcmot_02_enable -> hpg_stepgen_02:enable [ dir=forward , weight=1 ] ;
+    e_check_0:pause -> sig_pause [ dir=forward , weight=3 ] ;
+    axis_3:amp_enable_out -> sig_emcmot_03_enable [ dir=forward , weight=3 ] ;
+    hpg_stepgen_02:position_fb -> sig_motor_02_pos_fb [ dir=forward , weight=3 ] ;
+    halui_program:is_paused -> sig_check_program_pause [ dir=forward , weight=3 ] ;
+    sig_servo_4 -> bb_gpio_p8:out_22 [ dir=none , weight=2 ] ;
+    sig_bed_heaterl -> hpg_pwmgen_00_out_00:value [ dir=forward , weight=1 ] ;
+    axis_0:amp_enable_out -> sig_emcmot_00_enable [ dir=forward , weight=3 ] ;
+    pid_0:output -> sig_e0_heater [ dir=forward , weight=3 ] ;
+    limit1_0:out -> sig_e0_heaterl [ dir=forward , weight=3 ] ;
+    sig_emcmot_01_enable -> hpg_stepgen_01:enable [ dir=forward , weight=1 ] ;
+    sig_emcmot_00_enable -> hpg_stepgen_00:enable [ dir=forward , weight=1 ] ;
+    pid_1:output -> sig_bed_heater [ dir=forward , weight=3 ] ;
+    sig_emcmot_03_pos_cmd -> hpg_stepgen_03:position_cmd [ dir=forward , weight=1 ] ;
+    Therm_ch_04:value -> sig_e0_temp_meas [ dir=forward , weight=3 ] ;
+    bb_gpio_p9:in_13 -> sig_limit_z_min [ dir=forward , weight=3 ] ;
+    hpg_stepgen_01:position_fb -> sig_motor_01_pos_fb [ dir=forward , weight=3 ] ;
+    sig_motor_00_pos_fb -> axis_0:motor_pos_fb [ dir=forward , weight=1 ] ;
+    sig_servo_3 -> bb_gpio_p8:out_23 [ dir=none , weight=2 ] ;
+    bb_gpio_p9:in_11 -> sig_limit_z_max [ dir=forward , weight=3 ] ;
+    bb_gpio_p8:in_09 -> sig_limit_y_max [ dir=forward , weight=3 ] ;
+    axis_1:motor_pos_cmd -> sig_emcmot_01_pos_cmd [ dir=forward , weight=3 ] ;
+    sig_emcmot_03_enable -> hpg_stepgen_03:enable [ dir=forward , weight=1 ] ;
+    motion:program_line -> sig_check_program_line [ dir=forward , weight=3 ] ;
+    sig_e0_temp_meas -> pid_0:feedback [ dir=forward , weight=1 ] ;
+    hpg_stepgen_00:position_fb -> sig_motor_00_pos_fb [ dir=forward , weight=3 ] ;
+    sig_servo_2 -> bb_gpio_p8:out_24 [ dir=none , weight=2 ] ;
+} }

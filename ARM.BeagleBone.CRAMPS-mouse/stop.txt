@@ -1,0 +1,2 @@
+ 
+ x=304.416 y=292.546 z=0.300 a=61.771 program.line =0.000 steps.failed =60.955

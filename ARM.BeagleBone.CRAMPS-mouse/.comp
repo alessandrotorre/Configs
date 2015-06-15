@@ -1,0 +1,12 @@
+component joycounts;
+pin in float axisvalue;
+pin out s32 counts;
+param rw float scale=10;
+param r float fcounts=0;
+function updatecounts fp;
+;;
+#include <rtapi_math.h>
+FUNCTION(updatecounts){
+	fcounts=fcounts+scale*axisvalue;
+	counts=floor(fcounts);
+	}

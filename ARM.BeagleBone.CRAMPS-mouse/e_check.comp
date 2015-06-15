@@ -1,0 +1,195 @@
+/******************************************************************************
+ *
+ * Copyright (C) 2015 Alessandro Torre alessandro.torrebo@gmail.com
+ *
+ *
+ * This module checks the functionality of thermistors
+ *
+ ******************************************************************************
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
+ * THE AUTHORS OF THIS PROGRAM ACCEPT ABSOLUTELY NO LIABILITY FOR
+ * ANY HARM OR LOSS RESULTING FROM ITS USE.  IT IS _EXTREMELY_ UNWISE
+ * TO RELY ON SOFTWARE ALONE FOR SAFETY.  Any machinery capable of
+ * harming persons must have provisions for completely removing power
+ * from all motors, etc, before persons enter any danger area.  All
+ * machinery must be designed to comply with local and national safety
+ * codes, and the authors of this software can not, and do not, take
+ * any responsibility for such compliance.
+ *
+ * This code was written as part of the LinuxCNC project.  For more
+ * information, go to www.linuxcnc.org
+ ******************************************************************************/
+component e_check "Compares the 'filament position' commanded and read, during a program execution and puts in pause the program in case of errors" ;
+
+//# ##################################################
+//# PIN 
+//# ##################################################
+
+
+pin in		float 	cmd_x	"commanded position of the motor X";
+pin in		float 	cmd_y	"commanded position of the motor Y";
+pin in      float	cmd_z	"commanded position of the motor Z";
+pin in		float 	cmd_a	"commanded position of the motor A";
+pin io		float 	offset_x	"jog-while-pause x";
+pin io		float 	offset_y	"jog-while-pause x";
+pin in	 	bit 	isrunning 	"checks the run status of the program"; 
+pin in	 	bit 	isidle 		"checks the idle status of the program";
+pin in      bit     ispause     "checks the pause status of the program";
+pin out 	bit 	pause 		"Target Pin, it change from TRUE to FALSE if the difference between commanded position and reading filament position is greater of ErrMAX";
+pin in	 	bit 	Ahome       "checks the homed status of the A axis";
+pin in		float 	synch_distance		"distance in mm of syncronization about encoder from the cmd_a";
+pin in		float 	ErrMAX		"MAX error";
+pin in		float 	scale		"scale for encoder_value";
+pin out		float   encoder_cumulative 		"encoder position";
+pin in		float   encoder_position 		"debug utilities can be an internal variable encoder position";
+pin in		s32		program_line			"line of the current gcode in execution";
+pin out		s32		program_paused_line		"when the program paused due to e_check comp, the program line was stored";
+pin out		float	steps_failed			"During print it counts how many steps the encoder from the motors position";
+pin in 		s32		email                   "WARNING: to fix!!!I don' know how can i send a string like parameter for the email to send the alert email";
+//pin in 	bit		encoder_position_reset	"reset the input position of the mouse wheel"
+//pin out		float   encoder_time   "time when recorded the encoder event";
+function _ fp "Update the output value";
+
+author "Alessandro Torre";
+license "GPL"; 
+;;
+//# ##################################################
+//# LIBRARY
+//# ##################################################
+
+#include <stdio.h>  			//for write on file
+#include <stdlib.h> 			//for alert email
+#include <math.h> 				//for steps_failed
+#include <time.h>				//for velocity based systems
+//# ##################################################
+//# INTERNAL VARIABLES
+//# ##################################################
+
+float encoder_value; 			//needs to count mouse wheel step
+float cmda_synch; 				//this is the next lap when to the counters allignments 
+float encoder_position_old ; 	// needs to count mouse wheel steps
+float delta;  					//difference between gcode commanded position of the A motor and encoder reading position without allignments; 
+float offset; 					//needs to counter of failed steps
+float step_counter; 			// needs to counter of failed steps
+int fd; 						//for fprintf
+bool w;  						//check for writing on file
+
+//# ##################################################
+//# PROGRAM 
+//# ##################################################
+
+FUNCTION(_)
+{		
+//# ##################################################
+//# MODE: PROGRAM RUNNING 
+//# ##################################################
+
+
+//////////////////////// MOUSE WHEEL ////////////////////
+//system("sudo chmod go+rw /dev/input/event2");
+	if (isrunning==TRUE)
+		{
+			if( encoder_position > encoder_position_old )
+			{
+				encoder_value = 1*scale;											//assign +1 to pin "encoder_value"
+				encoder_cumulative = encoder_cumulative + encoder_value;			//compute a cumulative value that consider the syncronization
+				encoder_position_old = encoder_position;							//update the encoder_position
+			}
+
+			else if ( encoder_position < encoder_position_old )
+			{ 
+				encoder_value = (-1) *scale;                         			//assign -1 to pin "encoder_value"
+				encoder_cumulative = encoder_cumulative + encoder_value;     	//compute a cumulative value that consider the syncronization
+				encoder_position_old = encoder_position;						//update the encoder_position
+			}
+		
+//////////////////////// END MOUSE WHEEL ///////////////////
+
+			delta=cmd_a-encoder_cumulative;
+			w=TRUE;
+			pause=FALSE;
+	
+//if the program is running, reset the syncronization of the "encoder cumulative value" (encoder_cumulative) with the commanded position value (cmd_a)
+//every distance in mm (synch_distance) specificated by the user  
+		if ((ceil(cmd_a))>step_counter)
+			{
+				step_counter=ceil(cmd_a);           //intero superiore del numero con la virgola. Se è 2,2 restituisce 3
+				steps_failed=offset+delta;			//
+			}
+		if ( cmd_a > cmda_synch )    //if the commanded position its greater of the last commanded position shyncronized, resynch  
+			{	
+				cmda_synch=cmda_synch+synch_distance;
+				offset=steps_failed;
+				encoder_cumulative=cmd_a;		//synchronize "encoder_cumulative position" with the commanded position "cmd_a". If the [synch] value is 50 mm, "cmda_synch" will be 50,100,150,200
+			}
+		
+		if ( ( cmd_a - encoder_cumulative ) >= ErrMAX )			//if difference between "commanded position" and "read position" is bigger than Errormax put in pause and jog to home during the pause
+			{
+				program_paused_line = program_line;
+				pause = TRUE;			 
+				offset_x=cmd_x;		//offset during the pause (jog-while-pause) to put the y in home position
+				offset_y=cmd_y;    	//offset during the pause (jog-while-pause) to put the y in home position
+			}
+		}	
+		
+//# ##################################################
+//# MODE: PROGRAM PAUSE
+//# ##################################################
+	
+	if ((ispause==TRUE)&&(w==TRUE))
+		{
+			offset=steps_failed;
+			encoder_cumulative=cmd_a;		//synchronize "encoder_cumulative position" with the commanded position "cmd_a". 
+			w=FALSE;
+			FILE *fd = fopen("/home/machinekit/linuxcnc/configs/ARM.BeagleBone.CRAMPS-mouse/pause.txt", "w+");
+			if (fd == NULL) printf("Error opening 'pause.txt' file!\n");
+			else fprintf(fd,"Pause by e_check in x=%5.3f y=%5.3f z=%5.3f a=%5.3f program.line =%5.3f steps.failed =%5.3f\r",cmd_x,cmd_y,cmd_z,cmd_a,program_line,steps_failed);
+			fclose(fd); 	
+			system("cat pause.txt | mail -s \"ICON5D Pause for filament\" alessandro.torre@icon5d.com"); //send the text that was in pause.txt file that is created by the program in the same pattern of the config
+			//system("echo \"This is the body\" | mail -s \"This is the subject\" alessandro.torre@icon5d.com");
+			//email finish			
+			printf ("mail sended to %f alessandro.torre@icon5d.com\n", email);
+		}
+//# ##################################################
+//# MODE: PROGRAM IDLE
+//# ##################################################		
+	
+	else if (isidle==TRUE)   
+		{
+			w=FALSE;
+			pause=FALSE;
+			encoder_cumulative=0;
+			offset_x=0;
+			offset_y=0;
+			cmda_synch=0;
+			encoder_value=0;
+			delta=0;
+			program_paused_line=0;
+			if(encoder_cumulative!=0)
+			{ 
+				FILE *fd = fopen("/home/machinekit/linuxcnc/configs/ARM.BeagleBone.CRAMPS-mouse/stop.txt", "w+");
+				if (fd == NULL)	printf("Error opening 'stop.txt' file!\n");
+				else fprintf(fd," \n x=%5.3f y=%5.3f z=%5.3f a=%5.3f program.line =%5.3f steps.failed =%5.3f\r",cmd_x,cmd_y,cmd_z,cmd_a,program_line,steps_failed);
+				fclose(fd); 
+			}	
+			if (encoder_cumulative==0) steps_failed=0;
+		}
+}
+//todo: add a check cicle for attempting to unclugged the extruder.How? heating the hotend, tryng to extrude and check the feedback by the encoder.
+		
+	
