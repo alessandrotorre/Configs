@@ -1,3 +1,7 @@
+This configuration derived from CRAMPS wizard. It is a develop configuration 
+that include a component to measure the filament extrusion with a mouse wheel 
+like encoder. 
+
 
 This configuration drives a standard 4-axis 3D printer using the PRU for
 high speed step/dir pulse generation and a CRAMPS driver board.
