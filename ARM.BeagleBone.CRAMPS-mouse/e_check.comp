@@ -41,28 +41,28 @@ component e_check "Compares the 'filament position' commanded and read, during a
 //# ##################################################
 
 
-pin in		float 	cmd_x	"commanded position of the motor X";
-pin in		float 	cmd_y	"commanded position of the motor Y";
-pin in      float	cmd_z	"commanded position of the motor Z";
-pin in		float 	cmd_a	"commanded position of the motor A";
-pin io		float 	offset_x	"jog-while-pause x";
-pin io		float 	offset_y	"jog-while-pause x";
-pin in	 	bit 	isrunning 	"checks the run status of the program"; 
-pin in	 	bit 	isidle 		"checks the idle status of the program";
-pin in      bit     ispause     "checks the pause status of the program";
-pin out 	bit 	pause 		"Target Pin, it change from TRUE to FALSE if the difference between commanded position and reading filament position is greater of ErrMAX";
-pin in	 	bit 	Ahome       "checks the homed status of the A axis";
+pin in		float 	cmd_x			"commanded position of the motor X";
+pin in		float 	cmd_y			"commanded position of the motor Y";
+pin in      	float	cmd_z			"commanded position of the motor Z";
+pin in		float 	cmd_a			"commanded position of the motor A";
+pin io		float 	offset_x		"jog-while-pause x";
+pin io		float 	offset_y		"jog-while-pause x";
+pin in	 	bit 	isrunning 		"checks the run status of the program"; 
+pin in	 	bit 	isidle 			"checks the idle status of the program";
+pin in      	bit     ispause     		"checks the pause status of the program";
+pin out 	bit 	pause 			"Target Pin, it change from TRUE to FALSE if the difference between commanded position and reading filament position is greater of ErrMAX";
+pin in	 	bit 	Ahome       		"checks the homed status of the A axis";
 pin in		float 	synch_distance		"distance in mm of syncronization about encoder from the cmd_a";
-pin in		float 	ErrMAX		"MAX error";
-pin in		float 	scale		"scale for encoder_value";
-pin out		float   encoder_cumulative 		"encoder position";
-pin in		float   encoder_position 		"debug utilities can be an internal variable encoder position";
-pin in		s32		program_line			"line of the current gcode in execution";
-pin out		s32		program_paused_line		"when the program paused due to e_check comp, the program line was stored";
-pin out		float	steps_failed			"During print it counts how many steps the encoder from the motors position";
-pin in 		s32		email                   "WARNING: to fix!!!I don' know how can i send a string like parameter for the email to send the alert email";
-//pin in 	bit		encoder_position_reset	"reset the input position of the mouse wheel"
-//pin out		float   encoder_time   "time when recorded the encoder event";
+pin in		float 	ErrMAX			"MAX error";
+pin in		float 	scale			"scale for encoder_value";
+pin out		float   encoder_cumulative 	"virtualencoder position";
+pin in		float   encoder_position 	"debug utilities. It can be an internal it read tha hal_input pin about encoder position";
+pin in		s32	program_line		"line of the current gcode in execution";
+pin out		s32	program_paused_line	"when the program paused due to e_check comp, the program line was stored";
+pin out		float	steps_failed		"During print it counts how many steps the encoder lose from the motors position";
+pin in 		s32	email                   "WARNING: to fix!!!I don' know how can i send a string like parameter for the email to send the alert email";
+//pin in 	bit	encoder_position_reset	"reset the input position of the mouse wheel"
+//pin out	float   encoder_time   		"time when recorded the encoder event";
 function _ fp "Update the output value";
 
 author "Alessandro Torre";
@@ -74,20 +74,20 @@ license "GPL";
 
 #include <stdio.h>  			//for write on file
 #include <stdlib.h> 			//for alert email
-#include <math.h> 				//for steps_failed
-#include <time.h>				//for velocity based systems
+#include <math.h> 			//for steps_failed
+#include <time.h>			//for velocity based systems
 //# ##################################################
 //# INTERNAL VARIABLES
 //# ##################################################
 
 float encoder_value; 			//needs to count mouse wheel step
-float cmda_synch; 				//this is the next lap when to the counters allignments 
-float encoder_position_old ; 	// needs to count mouse wheel steps
-float delta;  					//difference between gcode commanded position of the A motor and encoder reading position without allignments; 
-float offset; 					//needs to counter of failed steps
+float cmda_synch; 			//this is the next lap when to the counters allignments 
+float encoder_position_old ; 		// needs to count mouse wheel steps
+float delta;  				//difference between gcode commanded position of the A motor and encoder reading position without allignments; 
+float offset; 				//needs to counter of failed steps
 float step_counter; 			// needs to counter of failed steps
-int fd; 						//for fprintf
-bool w;  						//check for writing on file
+int fd; 				//for fprintf
+bool w; 				//check for writing on file
 
 //# ##################################################
 //# PROGRAM 
