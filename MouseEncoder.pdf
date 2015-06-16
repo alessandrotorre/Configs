@@ -52,4 +52,4 @@ I'm trying to understand how can I store in real time the position but it is ano
 Problems that occurred during the writing of e_check component: 
 - sometimes is useful change the pin type about some existing pin (maybe from IN to IO). In this case the HID componente give an input value about hal_input.1.rel-wheel-position. The input type of pin can't be wrote in a component. If the "hal_input.1.rel-wheel-position" pin was an "IO" instead of "IN" it would be easier.
 - Computational timing, are important. I don't know if the operation are executed in sequence in the Component or not.
-- send a string parameter like the email name was better for configure it in the ini file, but I don't know how can I pass a string value to the component.
+- send a string parameter like the email name was better for configure it in the ini file, but I don't know how can I pass a string value to the component
