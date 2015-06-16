@@ -3,7 +3,7 @@
  * Copyright (C) 2015 Alessandro Torre alessandro.torrebo@gmail.com
  *
  *
- * This module checks the functionality of thermistors
+ * This module checks the functionality of filament extrusion
  *
  ******************************************************************************
  *
@@ -31,8 +31,8 @@
  * codes, and the authors of this software can not, and do not, take
  * any responsibility for such compliance.
  *
- * This code was written as part of the LinuxCNC project.  For more
- * information, go to www.linuxcnc.org
+ * This code was written as part of the machinekit project.  For more
+ * information, go to www.machinekit.io
  ******************************************************************************/
 component e_check "Compares the 'filament position' commanded and read, during a program execution and puts in pause the program in case of errors" ;
 
@@ -82,10 +82,10 @@ license "GPL";
 
 float encoder_value; 			//needs to count mouse wheel step
 float cmda_synch; 			//this is the next lap when to the counters allignments 
-float encoder_position_old ; 		// needs to count mouse wheel steps
+float encoder_position_old ; 		//needs to count mouse wheel steps
 float delta;  				//difference between gcode commanded position of the A motor and encoder reading position without allignments; 
 float offset; 				//needs to counter of failed steps
-float step_counter; 			// needs to counter of failed steps
+float step_counter; 			//needs to counter of failed steps
 int fd; 				//for fprintf
 bool w; 				//check for writing on file
 
@@ -128,8 +128,8 @@ FUNCTION(_)
 //every distance in mm (synch_distance) specificated by the user  
 		if ((ceil(cmd_a))>step_counter)
 			{
-				step_counter=ceil(cmd_a);           //intero superiore del numero con la virgola. Se è 2,2 restituisce 3
-				steps_failed=offset+delta;			//
+				step_counter=ceil(cmd_a);           //If cmd_a=2,2 ceil(cmd_a)=3
+				steps_failed=offset+delta;			
 			}
 		if ( cmd_a > cmda_synch )    //if the commanded position its greater of the last commanded position shyncronized, resynch  
 			{	
