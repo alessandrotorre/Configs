@@ -107,15 +107,15 @@ FUNCTION(_)
 			if( encoder_position > encoder_position_old )
 			{
 				encoder_value = 1*scale;											//assign +1 to pin "encoder_value"
-				encoder_cumulative = encoder_cumulative + encoder_value;			//compute a cumulative value that consider the syncronization
+				encoder_cumulative = encoder_cumulative + encoder_value;	//compute a cumulative value that consider the syncronization
 				encoder_position_old = encoder_position;							//update the encoder_position
 			}
 
 			else if ( encoder_position < encoder_position_old )
 			{ 
-				encoder_value = (-1) *scale;                         			//assign -1 to pin "encoder_value"
+				encoder_value = (-1) *scale;                         		//assign -1 to pin "encoder_value"
 				encoder_cumulative = encoder_cumulative + encoder_value;     	//compute a cumulative value that consider the syncronization
-				encoder_position_old = encoder_position;						//update the encoder_position
+				encoder_position_old = encoder_position;			//update the encoder_position
 			}
 		
 //////////////////////// END MOUSE WHEEL ///////////////////
@@ -128,17 +128,17 @@ FUNCTION(_)
 //every distance in mm (synch_distance) specificated by the user  
 		if ((ceil(cmd_a))>step_counter)
 			{
-				step_counter=ceil(cmd_a);           //If cmd_a=2,2 ceil(cmd_a)=3
+				step_counter=ceil(cmd_a);           				//If cmd_a=2,2 ceil(cmd_a)=3
 				steps_failed=offset+delta;			
 			}
-		if ( cmd_a > cmda_synch )    //if the commanded position its greater of the last commanded position shyncronized, resynch  
+		if ( cmd_a > cmda_synch )    							//if the commanded position its greater of the last commanded position shyncronized, resynch  
 			{	
 				cmda_synch=cmda_synch+synch_distance;
 				offset=steps_failed;
-				encoder_cumulative=cmd_a;		//synchronize "encoder_cumulative position" with the commanded position "cmd_a". If the [synch] value is 50 mm, "cmda_synch" will be 50,100,150,200
+				encoder_cumulative=cmd_a;					//synchronize "encoder_cumulative position" with the commanded position "cmd_a". If the [synch] value is 50 mm, "cmda_synch" will be 50,100,150,200
 			}
 		
-		if ( ( cmd_a - encoder_cumulative ) >= ErrMAX )			//if difference between "commanded position" and "read position" is bigger than Errormax put in pause and jog to home during the pause
+		if ( ( cmd_a - encoder_cumulative ) >= ErrMAX )					//if difference between "commanded position" and "read position" is bigger than Errormax put in pause and jog to home during the pause
 			{
 				program_paused_line = program_line;
 				pause = TRUE;			 
@@ -190,6 +190,8 @@ FUNCTION(_)
 			if (encoder_cumulative==0) steps_failed=0;
 		}
 }
-//todo: add a check cicle for attempting to unclugged the extruder.How? heating the hotend, tryng to extrude and check the feedback by the encoder.
-		
+//TODO
+//add a check cicle for attempting to unclugged the extruder.How? heating the hotend, tryng to extrude and check the feedback by the encoder.
+//split the fprintf printf and system actions to a user component 
+//split the HID event about mouse to not create interference with normal mouse movements
 	
