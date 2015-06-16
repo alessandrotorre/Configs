@@ -160,10 +160,10 @@ FUNCTION(_)
 			if (fd == NULL) printf("Error opening 'pause.txt' file!\n");
 			else fprintf(fd,"Pause by e_check in x=%5.3f y=%5.3f z=%5.3f a=%5.3f program.line =%5.3f steps.failed =%5.3f\r",cmd_x,cmd_y,cmd_z,cmd_a,program_line,steps_failed);
 			fclose(fd); 	
-			system("cat pause.txt | mail -s \"ICON5D Pause for filament\" alessandro.torre@icon5d.com"); //send the text that was in pause.txt file that is created by the program in the same pattern of the config
-			//system("echo \"This is the body\" | mail -s \"This is the subject\" alessandro.torre@icon5d.com");
+			system("cat pause.txt | mail -s \"ICON5D Pause for filament\" user@domain.com"); //send the text that was in pause.txt file that is created by the program in the same pattern of the config
+			//system("echo \"This is the body\" | mail -s \"This is the subject\" user@domain.com");
 			//email finish			
-			printf ("mail sended to %f alessandro.torre@icon5d.com\n", email);
+			printf ("mail sended to %f user@domain.com\n", email);
 		}
 //# ##################################################
 //# MODE: PROGRAM IDLE
