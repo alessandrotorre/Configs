@@ -24,9 +24,7 @@ try:
     launcher.check_installation()
     launcher.cleanup_session()
     #launcher.load_bbio_file('cramps2_cape.bbio')
-    #launcher.install_comp('thermistor_check.comp')
     #launcher.install_comp('e_check.comp')
-    #launcher.install_comp('reset.comp')
     launcher.start_process("configserver -n ICON5D ../Machineface-old ../Cetus")
     if args.video:
         launcher.start_process('videoserver --ini video.ini Webcam1')
