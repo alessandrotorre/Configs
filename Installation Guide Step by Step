@@ -1,0 +1,86 @@
+download this config and put this file in this pattern /home/machinekit/linuxcnc/configs/
+if you don't have this pattern:
+
+~ mkdir -p /home/machinekit/linuxcnc/configs/
+~ cd /home/machinekit/linuxcnc/configs/
+~ clone 
+~ chmod sudo +x run.py
+
+if you want to add the user email notification you have to add the packege relative to the email smtp
+
+~ sudo apt-get install mailutils
+
+Install and configure sstmp
+
+~ sudo apt-get install ssmtp
+~ sudo nano /etc/ssmtp/ssmtp.conf
+
+Cancel everything and paste and copy the following text in the page writing your email and password and hostname :
+///////////////////////
+
+########START COPY
+# Config file for sSMTP sendmail
+#
+# The person who gets all mail for userids < 1000
+# Make this empty to disable rewriting.
+root=user@gmail.com
+
+# The place where the mail goes. The actual machine name is required no
+# MX records are consulted. Commonly mailhosts are named mail.domain.com
+mailhub=smtp.gmail.com:587
+AuthUser=user@gmail.com
+AuthPass=yourpassword
+# UseTLS=YES
+UseSTARTTLS=YES
+
+
+# Where will the mail seem to come from?
+#rewriteDomain=
+
+# The full hostname
+hostname=beaglebone.localdomain
+
+# Are users allowed to set their own From: address?
+# YES - Allow the user to specify their own From: address
+# NO - Use the system generated From: address
+FromLineOverride=YES
+##########END COPY
+
+//////////
+
+Give the right permission of your mouse, and so you have to find its event number
+
+~ cat /proc/bus/input/devices
+
+
+I: Bus=0000 Vendor=0000 Product=0000 Version=0000
+N: Name="tps65217_pwr_but"
+P: Phys=
+S: Sysfs=/devices/ocp.3/44e0b000.i2c/i2c-0/0-0024/input/input0
+U: Uniq=
+H: Handlers=kbd event0
+B: PROP=0
+B: EV=3
+B: KEY=100000 0 0 0
+
+
+
+And give the read and write permission to yours mouse event with
+
+~ sudo chmod go+rw /dev/input/eventN            ##"N" is the number of yours mouse event
+
+Now you can check this cofiguration and this component
+You have to install the developer package about machinekit
+
+sudo apt-get install machinekit-dev
+
+from the pattern /home/machinekit/linuxcnc/configs/ARM.BeagleBone-mouse/
+Open the e_check.comp and enter your email in line 163:
+
+system("cat pause.txt | mail -s \" Pause for filament\" user@email.com");
+
+Compile and install the component
+~ sudo comp --compile e_check.comp
+~ sudo comp --install e_check.comp
+
+Now you can try my wizard config with the e_check component
