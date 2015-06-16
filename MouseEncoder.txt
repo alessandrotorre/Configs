@@ -1,11 +1,11 @@
 In this article I want share and discuss here my attempt to upgrade the user experience about the world of 3d printing.
 
-I'm trying to understand more about hal and machinekit and finally I wrote my first comp.
+I'm trying to understand more about hal and machinekit and finally I wrote my first component in C.
 My aim is to improve the reliability of the long prints and in particular, I'm trying to add a measure tool to the filament position.
 
-In the long prints sometimes, something linked to the extruder and hotend goes wrong like the following events
+In the long prints sometimes, something linked to the extruder and hotend can go wrong, like the following events:
 
-- The Hotend becomes clogged and the printer continues to print air for hours, before that someone sees and solves this issue. In this case you have to: 
+- The Hotend becomes clogged and the printer continues to print air for hours. When someone sees this event have to: 
         1 stop the print 
         2 measure the z height, jogging manually z axis to the proper height of the last z printed 
         3 open the gcode file in a text editor 
@@ -13,10 +13,13 @@ In the long prints sometimes, something linked to the extruder and hotend goes w
         5 change the "g92 A0" to the proper last value at last z height "g92 Axxxx.xx" 
         6 re-upload the gcode  
         7 Finally, if all things go well during these operations, re-start the print from the new Z coordinates 
-- Filament ends during a print, and nobody sees this event in time to replace the spool. Solution?: replace the spool and follow the upper case.
-- At last, I want measure the "extruder+hotend+material" capability and compare a value with another kind of hotend or another kind of extruder or another kind of material ( how much steps looses the extruder with this material vs the different one?how much steps, with this hotend rather than this other? etc)  
+- Filament ends during a print, and nobody sees this event in time to replace the spool. Solution?: replace the spool and follow the upper case. For example we found only spools of 2.5 kilo's of pla, and some our prints needs 4 or 5 kg. In general, the filament can finish before the prints end and you need to replace it during the print. 
+Now you have to watch all time the printer near by the end point of the filament. It's true that you can calculate when the filament will finish and add an M0 in the gcode, but for example you never know how many kilo's are in the spool and you have to calculate volume from the "A" mm extruded and then calculate the weight of pla extruded, 
+(noising and complicated) and it's another user operation that we want to kill for minimize humans errors.  
 
-For solve these problems I would add an encoder to the filament before it is extruded and check if it's indeed moving like the "A" of gcode commands. At this point there was another series of issues:
+- At last, I'd like to add a measure tool to the "extruder+hotend+material" capability that permits to compare a value with  of another kind of hotend or another kind of extruder or another kind of material: how much steps looses the extruder with this material vs the different one?how much steps, with this hotend rather than this other? etc)  
+
+For solve these problems I would add an encoder to the filament before it is extruded and check if it's indeed moving like the "A" of gcode, commands. At this point there was another series of issues:
 
         What kind of encoder (optical, magnetic, absolute, relative)? 
         How many wires? 
@@ -27,20 +30,20 @@ For solve these problems I would add an encoder to the filament before it is ext
 
 My first idea to solve all of this issues is very simple, and maybe it's not so much sophisticated, but it seems, at least virtually, that works and it needs a very very common, simple and affordable hardware. 
 Looking the post about 3d conexant mouse, I thought to connect and use like " encoder for filament " the mouse wheel, using the already existing hal_input component!
-These are the requisites about the encoder that seems to be satisfied by a genrical standard mouse wheel encoder like:
+These are the requisites about the encoder that seems to be satisfied by a standard mouse wheel encoder like:
 
 - Low frequency sample. It's sufficient a sample frequency of 10Hz or lower ( maybe 1Hz? ).
 - Resolution: depends on how fine do you want to check this event. For 1mm of filament resolution, at least 30 ticks/rev encoder resolution are needed (the optical mouse wheel like the old ball mouse can reach 250 ticks per revolution and normally mouse has 30 or 60 ticks/rev ).
 With 30 ticks/rev, we can reach the theoretical resolution about 0.5 mm without mechanics reductions.
 
 
-I wrote a brutal "C" component ( old tipe, not icomp and I don't know if this componont is compatible witht the new component standard ) called e_check.comp "extruder check" that calculate a virtual "encoder value" that the software can set and reset like it wants. 
-This component try to minimize the issue about the different scale values of the "encoder" and the "A stepper motor", resetting to zero the difference of this values every synch_distance (arbitrary constant in mm that the user can choose, maybe 50mm? 150mm? 500mm? Needs to try ) this is because its simplest ensure a tolerance of following error per distance and not in absolute way.
-If the "commanded position" is higher of "virtual encoder position" the print goes in pause, store the coordinates and the program line in a file called 'pause.txt', the extruder goes in a park position and the beaglebone send us an alert email.
+I wrote a brutal component in "C" ( old tipe, not icomp and I don't know if this component is compatible witht the new component standard ) called e_check.comp "extruder check" that calculate a virtual "encoder value" that the software can set and reset like it wants. 
+This component tries to minimize the issue about the different scale values of the "encoder" and the "A stepper motor", resetting to zero the difference of this values every synch_distance (arbitrary constant in mm that the user can choose, maybe 50mm? 150mm? 500mm? Needs to test ) this is because its simplest ensure a tolerance of following error per distance and not in absolute way.
+If the "commanded position" is higher of "virtual encoder position" the print goes in pause. E_check stores the coordinates and the program line in a file called 'pause.txt', the extruder goes in a park position and the beaglebone sends us an alert email.
 (I followed the jog-while-pause pins, but I didn't try it in a real world setup).
 
 
-There are many optimization that can be added to this component like the type of variables ( bit instead of float) and others upgrades that I'd like todo like the followings:
+There are many optimizations that can be added to this component like for examples the type of variables ( bit instead of float) and others upgrades that I'd like todo like the followings:
 - create an automated cycle that attempts to unclog the nozzle: increasing the temp, trying to extrude, check if it's really extruding, and if it is, resume the print else rest in pause and send an alert email.
 - Adapt a version of this component that works with velocity extrusion (I tried to import the event time but the component slow down a lot and it need 15000ns instead of 100ns )
 
