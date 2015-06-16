@@ -106,9 +106,9 @@ FUNCTION(_)
 		{
 			if( encoder_position > encoder_position_old )
 			{
-				encoder_value = 1*scale;											//assign +1 to pin "encoder_value"
+				encoder_value = 1*scale;					//assign 1 to pin "encoder_value"						//assign +1 to pin "encoder_value"
 				encoder_cumulative = encoder_cumulative + encoder_value;	//compute a cumulative value that consider the syncronization
-				encoder_position_old = encoder_position;							//update the encoder_position
+				encoder_position_old = encoder_position;			//update the encoder_position
 			}
 
 			else if ( encoder_position < encoder_position_old )
