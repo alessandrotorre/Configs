@@ -41,28 +41,29 @@ component e_check "Compares the 'filament position' commanded and read, during a
 //# ##################################################
 
 
-pin in		float 	cmd_x			"commanded position of the motor X";
-pin in		float 	cmd_y			"commanded position of the motor Y";
-pin in      	float	cmd_z			"commanded position of the motor Z";
-pin in		float 	cmd_a			"commanded position of the motor A";
-pin io		float 	offset_x		"jog-while-pause x";
-pin io		float 	offset_y		"jog-while-pause x";
-pin in	 	bit 	isrunning 		"checks the run status of the program"; 
-pin in	 	bit 	isidle 			"checks the idle status of the program";
-pin in      	bit     ispause     		"checks the pause status of the program";
-pin out 	bit 	pause 			"Target Pin, it change from TRUE to FALSE if the difference between commanded position and reading filament position is greater of ErrMAX";
-pin in	 	bit 	Ahome       		"checks the homed status of the A axis";
+pin in		float 	cmd_x	"commanded position of the motor X";
+pin in		float 	cmd_y	"commanded position of the motor Y";
+pin in      float	cmd_z	"commanded position of the motor Z";
+pin in		float 	cmd_a	"commanded position of the motor A";
+pin io		float 	offset_x	"jog-while-pause x";
+pin io		float 	offset_y	"jog-while-pause x";
+pin in	 	bit 	isrunning 	"checks the run status of the program"; 
+pin in	 	bit 	isidle 		"checks the idle status of the program";
+pin in      bit     ispause     "checks the pause status of the program";
+pin out 	bit 	pause 		"Target Pin, it change from TRUE to FALSE if the difference between commanded position and reading filament position is greater of ErrMAX";
+pin in	 	bit 	Ahome       "checks the homed status of the A axis";
 pin in		float 	synch_distance		"distance in mm of syncronization about encoder from the cmd_a";
-pin in		float 	ErrMAX			"MAX error";
-pin in		float 	scale			"scale for encoder_value";
-pin out		float   encoder_cumulative 	"virtualencoder position";
-pin in		float   encoder_position 	"debug utilities. It can be an internal it read tha hal_input pin about encoder position";
-pin in		s32	program_line		"line of the current gcode in execution";
-pin out		s32	program_paused_line	"when the program paused due to e_check comp, the program line was stored";
-pin out		float	steps_failed		"During print it counts how many steps the encoder lose from the motors position";
-pin in 		s32	email                   "WARNING: to fix!!!I don' know how can i send a string like parameter for the email to send the alert email";
-//pin in 	bit	encoder_position_reset	"reset the input position of the mouse wheel"
-//pin out	float   encoder_time   		"time when recorded the encoder event";
+pin in		float 	ErrMAX		"MAX error";
+pin in		float 	scale		"scale for encoder_value";
+pin out		float   encoder_cumulative 		"encoder position";
+pin in		float   encoder_position 		"debug utilities It can be an internal it read tha hal_input pin about encoder position";
+pin in		s32		program_line			"line of the current gcode in execution";
+pin out		s32		program_paused_line		"when the program paused due to e_check comp, the program line was stored";
+pin out		float	steps_failed			"During print it counts how many steps the encoder from the motors position";
+pin in 		s32		email                   "WARNING: to fix!!!I don' know how can i send a string like parameter for the email to send the alert email";
+pin io		bit		write_send				"if true write on file pause.txt and send an alert email";
+//pin in 	bit		encoder_position_reset	"reset the input position of the mouse wheel"
+//pin out	float   encoder_time   			"time when recorded the encoder event";
 function _ fp "Update the output value";
 
 author "Alessandro Torre";
@@ -74,20 +75,21 @@ license "GPL";
 
 #include <stdio.h>  			//for write on file
 #include <stdlib.h> 			//for alert email
-#include <math.h> 			//for steps_failed
-#include <time.h>			//for velocity based systems
+#include <math.h> 				//for steps_failed
+#include <time.h>				//for velocity based systems
+//#include <pippo>				//for execution of python script execve()
 //# ##################################################
 //# INTERNAL VARIABLES
 //# ##################################################
 
 float encoder_value; 			//needs to count mouse wheel step
-float cmda_synch; 			//this is the next lap when to the counters allignments 
-float encoder_position_old ; 		//needs to count mouse wheel steps
-float delta;  				//difference between gcode commanded position of the A motor and encoder reading position without allignments; 
-float offset; 				//needs to counter of failed steps
-float step_counter; 			//needs to counter of failed steps
-int fd; 				//for fprintf
-bool w; 				//check for writing on file
+float cmda_synch; 				//this is the next lap when to the counters allignments 
+float encoder_position_old ; 	// needs to count mouse wheel steps
+float delta;  					//difference between gcode commanded position of the A motor and encoder reading position without allignments; 
+float offset; 					//needs to counter of failed steps
+float step_counter; 			// needs to counter of failed steps
+int fd; 						//for fprintf
+bool w;  						//check for writing on file
 
 //# ##################################################
 //# PROGRAM 
@@ -106,16 +108,16 @@ FUNCTION(_)
 		{
 			if( encoder_position > encoder_position_old )
 			{
-				encoder_value = 1*scale;					//assign 1 to pin "encoder_value"						//assign +1 to pin "encoder_value"
-				encoder_cumulative = encoder_cumulative + encoder_value;	//compute a cumulative value that consider the syncronization
-				encoder_position_old = encoder_position;			//update the encoder_position
+				encoder_value = 1*scale;											//assign +1 to pin "encoder_value"
+				encoder_cumulative = encoder_cumulative + encoder_value;			//compute a cumulative value that consider the syncronization
+				encoder_position_old = encoder_position;							//update the encoder_position
 			}
 
 			else if ( encoder_position < encoder_position_old )
 			{ 
-				encoder_value = (-1) *scale;                         		//assign -1 to pin "encoder_value"
+				encoder_value = (-1) *scale;                         			//assign -1 to pin "encoder_value"
 				encoder_cumulative = encoder_cumulative + encoder_value;     	//compute a cumulative value that consider the syncronization
-				encoder_position_old = encoder_position;			//update the encoder_position
+				encoder_position_old = encoder_position;						//update the encoder_position
 			}
 		
 //////////////////////// END MOUSE WHEEL ///////////////////
@@ -128,17 +130,17 @@ FUNCTION(_)
 //every distance in mm (synch_distance) specificated by the user  
 		if ((ceil(cmd_a))>step_counter)
 			{
-				step_counter=ceil(cmd_a);           				//If cmd_a=2,2 ceil(cmd_a)=3
-				steps_failed=offset+delta;			
+				step_counter=ceil(cmd_a);           //ceil(x) give the upper int value of x float number. If x=2.2--> ceil(x)=3
+				steps_failed=offset+delta;			//
 			}
-		if ( cmd_a > cmda_synch )    							//if the commanded position its greater of the last commanded position shyncronized, resynch  
+		if ( cmd_a > cmda_synch )    				//if the commanded position its greater of the last commanded position shyncronized, resynch  
 			{	
 				cmda_synch=cmda_synch+synch_distance;
 				offset=steps_failed;
-				encoder_cumulative=cmd_a;					//synchronize "encoder_cumulative position" with the commanded position "cmd_a". If the [synch] value is 50 mm, "cmda_synch" will be 50,100,150,200
+				encoder_cumulative=cmd_a;			//synchronize "encoder_cumulative position" with the commanded position "cmd_a". If the [synch] value is 50 mm, "cmda_synch" will be 50,100,150,200
 			}
 		
-		if ( ( cmd_a - encoder_cumulative ) >= ErrMAX )					//if difference between "commanded position" and "read position" is bigger than Errormax put in pause and jog to home during the pause
+		if ( ( cmd_a - encoder_cumulative ) >= ErrMAX )				//if difference between "commanded position" and "read position" is bigger than Errormax put in pause and jog to home during the pause
 			{
 				program_paused_line = program_line;
 				pause = TRUE;			 
@@ -156,14 +158,7 @@ FUNCTION(_)
 			offset=steps_failed;
 			encoder_cumulative=cmd_a;		//synchronize "encoder_cumulative position" with the commanded position "cmd_a". 
 			w=FALSE;
-			FILE *fd = fopen("/home/machinekit/linuxcnc/configs/ARM.BeagleBone.CRAMPS-mouse/pause.txt", "w+");
-			if (fd == NULL) printf("Error opening 'pause.txt' file!\n");
-			else fprintf(fd,"Pause by e_check in x=%5.3f y=%5.3f z=%5.3f a=%5.3f program.line =%5.3f steps.failed =%5.3f\r",cmd_x,cmd_y,cmd_z,cmd_a,program_line,steps_failed);
-			fclose(fd); 	
-			system("cat pause.txt | mail -s \"ICON5D Pause for filament\" user@domain.com"); //send the text that was in pause.txt file that is created by the program in the same pattern of the config
-			//system("echo \"This is the body\" | mail -s \"This is the subject\" user@domain.com");
-			//email finish			
-			printf ("mail sended to %f user@domain.com\n", email);
+			write_send=1;	
 		}
 //# ##################################################
 //# MODE: PROGRAM IDLE
@@ -190,8 +185,6 @@ FUNCTION(_)
 			if (encoder_cumulative==0) steps_failed=0;
 		}
 }
-//TODO
-//add a check cicle for attempting to unclugged the extruder.How? heating the hotend, tryng to extrude and check the feedback by the encoder.
-//split the fprintf printf and system actions to a user component 
-//split the HID event about mouse to not create interference with normal mouse movements
+//todo: add a check cicle for attempting to unclugged the extruder.How? heating the hotend, tryng to extrude and check the feedback by the encoder.
+		
 	
