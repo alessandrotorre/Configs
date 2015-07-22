@@ -185,6 +185,6 @@ FUNCTION(_)
 			if (encoder_cumulative==0) steps_failed=0;
 		}
 }
-//todo: add a check cicle for attempting to unclugged the extruder.How? heating the hotend, tryng to extrude and check the feedback by the encoder.
+//todo: Add a check cycle for attempting to unclogged the extruder. How? heating the hotend, trying to extrude and check the feedback by the encoder.
 		
 	
