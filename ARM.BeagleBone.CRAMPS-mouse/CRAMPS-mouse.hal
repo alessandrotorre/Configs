@@ -21,7 +21,7 @@ loadusr -Wn storage hal_storage -n storage -f position.txt -a -l
 #loadusr -w storage hal_storage -n storage -f storage.ini -a
 
 # Python user-mode HAL module for store and alert during e_check pause
-loadusr -W /home/machinekit/linuxcnc/CRAMPS-mouse-2Z-15072015/e_alert
+loadusr -W /home/machinekit/linuxcnc/configs/ARM.BeagleBone.CRAMPS-mouse/e_alert
 
 # ###################################
 # Core EMC/HAL Loads
