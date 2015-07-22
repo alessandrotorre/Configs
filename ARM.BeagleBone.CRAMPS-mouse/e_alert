@@ -72,8 +72,8 @@ try:
 			from email.MIMEBase import MIMEBase
 			from email import encoders
  
-			fromaddr = "alessandro.torrebo@gmail.com"
-			toaddr = "alessandro.torre@icon5d.com"
+			fromaddr = "WRITE YOUR EMAIL"
+			toaddr = "WRITE YOUR EMAIL"
  
 			msg = MIMEMultipart()
  
@@ -97,7 +97,7 @@ try:
  
 			server = smtplib.SMTP('smtp.gmail.com', 587)
 			server.starttls()
-			server.login(fromaddr, "towerpuzzola")
+			server.login(fromaddr, "WRITE YOUR PASSWORD")
 			text = msg.as_string()
 			server.sendmail(fromaddr, toaddr, text)
 			server.quit()
