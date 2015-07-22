@@ -101,5 +101,4 @@ try:
 			e_alert['write_send'] = 0
 except KeyboardInterrupt:
 	raise SystemExit
-# http://naelshiab.com/tutorial-send-email-python/
-#http://linuxcnc.org/docs/html/hal/halmodule.html
+
