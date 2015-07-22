@@ -1,9 +1,5 @@
 #!/usr/bin/python
-
-
-
 """
- *
  * Copyright (C) 2015 Alessandro Torre alessandro.torrebo@gmail.com
  *
  *
@@ -58,7 +54,7 @@ try:
 			time.sleep(1)
 			
 # Open a file in write mode
-			fo = open("/home/machinekit/linuxcnc/CRAMPS-mouse-2Z-15072015/pause.txt", "rw+")
+			fo = open("/home/machinekit/linuxcnc/configs/ARM.BeagleBone.CRAMPS-mouse/pause.txt", "rw+")
 			#if (fo == NULL) printf "Error opening 'pause.txt' file!";
 			#else printf(fd,"Pause by e_check in x=%5.3f y=%5.3f z=%5.3f a=%5.3f program.line =%5.3f steps.failed =%5.3f\r",cmd_x,cmd_y,cmd_z,cmd_a,program_line,steps_failed);
 			print "Pause by e_check in x= ",e_alert.cmd_x," y= ",e_alert.cmd_y," z= ",e_alert.cmd_z," a= ",e_alert.cmd_a," program.line = ",e_alert.program_line," steps.failed = ",e_alert.steps_failed
@@ -86,7 +82,7 @@ try:
 			msg.attach(MIMEText(body, 'plain'))
 	 
 			filename = "pause.txt"
-			attachment = open("/home/machinekit/linuxcnc/CRAMPS-mouse-2Z-15072015/pause.txt", "rb")
+			attachment = open("/home/machinekit/linuxcnc/configs/ARM.BeagleBone.CRAMPS-mouse/pause.txt", "rb")
  
 			part = MIMEBase('application', 'octet-stream')
 			part.set_payload((attachment).read())
