@@ -1,6 +1,8 @@
 # #######################################
 #
-# HAL file for BeagleBone + BeBoPr cape with 4 steppers
+# HAL file for BeagleBone + CRAMPS cape with 4 steppers 
+#
+# Mouse wheel filament change
 #
 # Derived from example hm2-stepper config
 #
@@ -17,6 +19,9 @@ loadusr -w ./setup-mouse.sh
 # Python user-mode HAL module for storing values
 loadusr -Wn storage hal_storage -n storage -f position.txt -a -l
 #loadusr -w storage hal_storage -n storage -f storage.ini -a
+
+# Python user-mode HAL module for store and alert during e_check pause
+loadusr -W /home/machinekit/linuxcnc/CRAMPS-mouse-2Z-15072015/e_alert
 
 # ###################################
 # Core EMC/HAL Loads
@@ -442,14 +447,6 @@ setp pid.1.maxerrorI 1.0
 setp pid.1.bias    0.5
 setp pid.1.enable   1
 
-#alo 
-# ##################################################
-# Storage
-# ##################################################
-
-#newpin storage.hpg.stepgen.00.position     float io
-
-#net hpg.stepgen.00.position <=> storage.hpg.stepgen.00.position
 
 # ###################################
 # e-check 
@@ -507,7 +504,30 @@ setp e-check.0.ErrMAX 			[E_CHECK]ERR_MAX	#max error permitted of difference bet
 setp e-check.0.synch-distance 	[E_CHECK]SYNCH      #to each distance, aligns the counters of the "commanded position" and "encoder position"
 setp e-check.0.scale 			[E_CHECK]SCALE		#scale for mouse wheel
 
- 
+# ###################################
+# e-alert
+# ###################################
+
+net emcjoint.00.pos-cmd <= axis.0.joint-pos-cmd     
+net emcjoint.00.pos-cmd => e_alert.cmd_x
+
+net emcjoint.01.pos-cmd <= axis.1.joint-pos-cmd
+net emcjoint.01.pos-cmd => e_alert.cmd_y
+
+net emcjoint.02.pos-cmd <= axis.2.joint-pos-cmd
+net emcjoint.02.pos-cmd => e_alert.cmd_z
+
+net emcjoint.03.pos-cmd <= axis.3.joint-pos-cmd
+net emcjoint.03.pos-cmd => e_alert.cmd_a
+
+net check.program-line <= motion.program-line
+net check.program-line => e_alert.program_line
+
+net check.steps-failed <= e-check.0.steps-failed 
+net check.steps-failed => e_alert.steps_failed
+
+net check.write-send <= e-check.0.write-send
+net check.write-send => e_alert.write_send
 
 # ###################################
 # jog-while-pause 
