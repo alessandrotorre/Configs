@@ -1,0 +1,34 @@
+#Accendi la temperatura solo se la macchina è fuori dalla catena E_stop
+loadrt conv_s32_float count=2
+
+addf conv-s32-float.0  servo-thread
+addf conv-s32-float.1  servo-thread
+
+#net accednditemperatura tempwidget.enable <= halui.machine.is-on 
+net security.pwm  tempwidget.enable tempwidget.e0.enable tempwidget.bed.enable <= halui.machine.is-on
+#setp tempwidget.enable 1
+
+
+# Include your customized HAL commands here
+# The commands in this file are run after the AXIS GUI (including PyVCP panel) starts
+
+net e0.temp.meas => tempwidget.e0.temp.meas
+net bed.temp.meas => tempwidget.bed.temp.meas
+
+
+
+
+net T.e0 tempwidget.e0.temp.set conv-s32-float.0.in
+net e0.temp.set conv-s32-float.0.out
+#net e0.temp.set  => tempwidget.e0.temp.set
+
+net T.bed tempwidget.bed.temp.set conv-s32-float.1.in
+net bed.temp.set conv-s32-float.1.out
+
+
+#net spindle hpg.pwmgen.00.out.05.value => #pyvcp.hpg.pwmgen.00.out.05.value
+
+
+
+
+
