@@ -1,0 +1,89 @@
+#!/usr/bin/python
+
+#Basic imports
+from ctypes import *
+import sys
+#Phidget specific imports
+from Phidgets.PhidgetException import PhidgetErrorCodes, PhidgetException
+from Phidgets.Events.Events import AttachEventArgs, DetachEventArgs, ErrorEventArgs, TemperatureChangeEventArgs
+from Phidgets.Devices.TemperatureSensor import TemperatureSensor, ThermocoupleType
+#import methods for sleeping thread
+from time import sleep
+from Phidgets.Phidget import PhidgetLogLevel
+import hal 
+import time
+
+h = hal.component("temperature")
+h.newpin("T_ambiente",		 hal.HAL_FLOAT, hal.HAL_IN)
+h.newpin("T_zero",		 hal.HAL_FLOAT, hal.HAL_IN)
+h.newpin("T_uno",		 hal.HAL_FLOAT, hal.HAL_IN)
+h.ready()	
+
+
+#Create an temperaturesensor object
+try:
+    temperatureSensor = TemperatureSensor()
+except RuntimeError as e:
+    print("Runtime Exception: %s" % e.details)
+    print("Exiting....")
+    exit(1)
+
+
+#print("Opening phidget object....")
+#Open
+try:
+    temperatureSensor.openPhidget()
+except PhidgetException as e:
+    print("Phidget Exception %i: %s" % (e.code, e.details))
+    print("Exiting....")
+    exit(1)
+
+#print("Waiting for attach....")
+
+#Wait for Attachment (plugging in) of the Phidget
+try:
+    temperatureSensor.waitForAttach(10000)
+except PhidgetException as e:
+    print("Phidget Exception %i: %s" % (e.code, e.details))
+    try:
+        temperatureSensor.closePhidget()
+    except PhidgetException as e:
+        print("Phidget Exception %i: %s" % (e.code, e.details))
+        print("Exiting....")
+       	exit(1)
+   	print("Exiting....")
+   	exit(1)
+
+
+#print("Setting Thermocouple type...")
+
+
+temperatureSensor.setThermocoupleType(0, ThermocoupleType.PHIDGET_TEMPERATURE_SENSOR_K_TYPE)
+#print("Setting sensitivity of the thermocouple....")
+temperatureSensor.setTemperatureChangeTrigger(0, 0.20)
+#sleep(5) #sleep for 5 seconds
+
+print("Start reading Temperature")
+while(1):	#print("Sensitivity of thermocouple index 0 is now %f" % (temperatureSensor.getTemperatureChangeTrigger(0)))
+	Tambiente = temperatureSensor.getAmbientTemperature()
+	Tzero = temperatureSensor.getTemperature(0)
+	Tuno = temperatureSensor.getTemperature(1)
+	sleep(0.2)
+	h.T_ambiente=Tambiente
+	h.T_zero=Tzero
+	h.T_uno=Tuno
+	#print("T0:%.1f   T1:%.1f  T_ambiente:%.1f\n" % (h.T_zero,h.T_uno,h.T_ambiente))
+	
+	#chr = sys.stdin.read(1)
+
+	#print("Closing...")
+
+try:
+  temperatureSensor.closePhidget()
+except PhidgetException as e:
+  print("Phidget Exception %i: %s" % (e.code, e.details))
+  print("Exiting....")
+exit(1)
+
+			
+		
