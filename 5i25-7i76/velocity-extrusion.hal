@@ -1,0 +1,522 @@
+# #######################################
+#
+# HAL file for HostMot2 with 5 steppers
+#
+# Derived from Ted Hyde's original hm2-servo config
+#
+# Based up work and discussion with Seb & Peter & Jeff
+# GNU license references - insert here. www.linuxcnc.org
+#
+#
+# ########################################
+# Firmware files are in /lib/firmware/hm2/7i43/
+# Must symlink the hostmot2 firmware directory of sanbox to
+# /lib/firmware before running EMC2...
+# sudo ln -s $HOME/emc2-sandbox/src/hal/drivers/mesa-hostmot2/firmware /lib/firmware/hm2
+#
+# See also:
+# <http://www.linuxcnc.org/docs/devel/html/man/man9/hostmot2.9.html#config%20modparam>
+# and http://wiki.linuxcnc.org/cgi-bin/emcinfo.pl?HostMot2
+#
+# #####################################################################
+
+
+# ###################################
+# Core EMC/HAL Loads
+# ###################################
+
+# kinematics
+loadrt trivkins
+
+# motion controller, get name and thread periods from ini file
+loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
+
+# hostmot2 driver
+loadrt hostmot2
+# load low-level driver
+loadrt [HOSTMOT2](DRIVER) config=[HOSTMOT2](CONFIG)
+# load pwmgen, pid and limits for E0 and Bed 
+loadrt pid num_chan=2
+loadrt limit1 count=2
+# load tempereture pwm
+loadrt pwmgen output_type=0,0,0
+loadrt scale count=1
+# load estop latch component
+loadrt estop_latch
+#VelocityExtruder
+# load 5 differentiators (for velocity of X Y and Z and accelerations of X Y )
+loadrt ddt names=ddt_x,ddt_y,ddt_z,ddt_xv,ddt_yv
+# load VelocityExtruder component that give the output of the A position
+loadrt VelocityExtruder
+
+
+# Python user-mode HAL module for read during phidget temperature
+loadusr -W /home/linuxcnc/linuxcnc/configs/stepper-mesa-hm2/temperature
+
+# ################################################
+# THREADS
+# ################################################
+
+addf hm2_[HOSTMOT2](BOARD).0.read         		servo-thread
+addf motion-command-handler               		servo-thread
+addf motion-controller                    		servo-thread
+# revel in the free time here from not having to run PID 
+addf hm2_[HOSTMOT2](BOARD).0.write      		servo-thread
+addf estop-latch.0                     			servo-thread
+addf pid.0.do-pid-calcs					servo-thread
+addf pid.1.do-pid-calcs					servo-thread
+addf pid.2.do-pid-calcs					servo-thread
+addf limit1.0                          			servo-thread
+addf limit1.1                           		servo-thread
+addf limit1.2						servo-thread
+addf pwmgen.make-pulses					base-thread
+addf pwmgen.update					servo-thread
+addf scale.0 						servo-thread
+addf ddt_x 						servo-thread
+addf ddt_y 						servo-thread
+addf ddt_z 						servo-thread
+addf ddt_xv 						servo-thread
+addf ddt_yv 						servo-thread
+addf VelocityExtruder.0 				servo-thread
+
+
+# ######################################################
+# Axis-of-motion Specific Configs (not the GUI)
+# ######################################################
+
+
+# ################
+# X [0] Axis
+# ################
+
+# axis enable chain
+newsig emcmot.00.enable bit
+sets emcmot.00.enable FALSE
+
+net emcmot.00.enable <= axis.0.amp-enable-out 
+net emcmot.00.enable => hm2_[HOSTMOT2](BOARD).0.stepgen.00.enable
+
+
+# position command and feedback
+net emcmot.00.pos-cmd <= axis.0.motor-pos-cmd
+net emcmot.00.pos-cmd => hm2_[HOSTMOT2](BOARD).0.stepgen.00.position-cmd
+
+net motor.00.pos-fb <= hm2_[HOSTMOT2](BOARD).0.stepgen.00.position-fb
+net motor.00.pos-fb => axis.0.motor-pos-fb ddt_x.in
+
+# timing parameters
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.dirsetup        [AXIS_0]DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.dirhold         [AXIS_0]DIRHOLD
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.steplen         [AXIS_0]STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.stepspace       [AXIS_0]STEPSPACE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.position-scale  [AXIS_0]SCALE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.maxvel          [AXIS_0]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.maxaccel        [AXIS_0]STEPGEN_MAX_ACC
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.step_type       0
+
+
+# ################
+# Y [1] Axis
+# ################
+
+# axis enable chain
+newsig emcmot.01.enable bit
+sets emcmot.01.enable FALSE
+
+net emcmot.01.enable <= axis.1.amp-enable-out 
+net emcmot.01.enable => hm2_[HOSTMOT2](BOARD).0.stepgen.01.enable
+
+
+# position command and feedback
+net emcmot.01.pos-cmd <= axis.1.motor-pos-cmd
+net emcmot.01.pos-cmd => hm2_[HOSTMOT2](BOARD).0.stepgen.01.position-cmd
+
+net motor.01.pos-fb <= hm2_[HOSTMOT2](BOARD).0.stepgen.01.position-fb
+net motor.01.pos-fb => axis.1.motor-pos-fb ddt_y.in
+
+# timing parameters
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.dirsetup        [AXIS_1]DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.dirhold         [AXIS_1]DIRHOLD
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.steplen         [AXIS_1]STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.stepspace       [AXIS_1]STEPSPACE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.position-scale  [AXIS_1]SCALE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.maxvel          [AXIS_1]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.maxaccel        [AXIS_1]STEPGEN_MAX_ACC
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.step_type       0
+
+
+# ################
+# Z [2] Axis
+# ################
+
+# axis enable chain
+newsig emcmot.02.enable bit
+sets emcmot.02.enable FALSE
+
+net emcmot.02.enable <= axis.2.amp-enable-out 
+net emcmot.02.enable => hm2_[HOSTMOT2](BOARD).0.stepgen.02.enable
+
+
+# position command and feedback
+net emcmot.02.pos-cmd <= axis.2.motor-pos-cmd
+net emcmot.02.pos-cmd => hm2_[HOSTMOT2](BOARD).0.stepgen.02.position-cmd
+
+net motor.02.pos-fb <= hm2_[HOSTMOT2](BOARD).0.stepgen.02.position-fb
+net motor.02.pos-fb => axis.2.motor-pos-fb ddt_z.in
+
+
+# timing parameters
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.dirsetup        [AXIS_2]DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.dirhold         [AXIS_2]DIRHOLD
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.steplen         [AXIS_2]STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.stepspace       [AXIS_2]STEPSPACE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.position-scale  [AXIS_2]SCALE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.maxvel          [AXIS_2]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.maxaccel        [AXIS_2]STEPGEN_MAX_ACC
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.step_type       0
+
+
+# ################
+# A [3] Axis (Extruder)
+# ################
+
+# axis enable chain
+newsig emcmot.03.enable bit
+sets emcmot.03.enable FALSE
+net emcmot.03.enable <= axis.3.amp-enable-out 
+net emcmot.03.enable => hm2_[HOSTMOT2](BOARD).0.stepgen.03.enable
+
+
+# position command and feedback
+net emcmot.03.pos-cmd <= axis.3.motor-pos-cmd
+#net emcmot.03.pos-cmd <= VelocityExtruder.0.A
+net emcmot.03.pos-cmd => hm2_[HOSTMOT2](BOARD).0.stepgen.03.position-cmd
+
+net motor.03.pos-fb <= hm2_[HOSTMOT2](BOARD).0.stepgen.03.position-fb
+net motor.03.pos-fb => axis.3.motor-pos-fb 
+
+# send the velocity of X and Y to Velocity extruder component
+
+net Xvel ddt_x.out =>  VelocityExtruder.0.Vx
+net Yvel ddt_y.out =>  VelocityExtruder.0.Vy
+#net Zvel ddt_z.out =>  VelocityExtruder.0.Vz
+net Xacc ddt_xv.out => VelocityExtruder.0.Acc-x
+net Yacc ddt_yv.out => VelocityExtruder.0.Acc-y
+#net Yacc ddt_zv.out => VelocityExtruder.0.Acc-z
+
+net Apos-fixed halui.axis.3.pos-relative => VelocityExtruder.0.Apos
+
+# timing parameters
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.dirsetup        [AXIS_3]DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.dirhold         [AXIS_3]DIRHOLD
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.steplen         [AXIS_3]STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.stepspace       [AXIS_3]STEPSPACE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.position-scale  [AXIS_3]SCALE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.maxvel          [AXIS_3]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.maxaccel        [AXIS_3]STEPGEN_MAX_ACC# axis enable chain
+
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.step_type       0
+
+
+# Velocity Extruder parameters
+
+setp VelocityExtruder.0.AreaFilamento 2.40528
+setp VelocityExtruder.0.Altezza-layer 0.3
+setp VelocityExtruder.0.Nozzle 0.6
+setp VelocityExtruder.0.enable 1
+setp VelocityExtruder.0.Vprecharge 15
+setp VelocityExtruder.0.Vretraction 15
+setp VelocityExtruder.0.precharge-mm 3
+setp VelocityExtruder.0.retraction-mm 3
+setp VelocityExtruder.0.K 0
+
+
+# ################
+# B [4] Axis (Extruder)
+# ################
+
+# axis enable chain
+newsig emcmot.04.enable bit
+sets emcmot.04.enable FALSE
+net emcmot.04.enable <= axis.4.amp-enable-out 
+
+#####################collegata anche alle temperature, se field output 15 e' attivo allora anche il relè si attiva
+net emcmot.04.enable => hm2_[HOSTMOT2](BOARD).0.stepgen.04.enable pwmgen.0.enable pwmgen.1.enable pwmgen.2.enable
+
+
+# position command and feedback
+net emcmot.04.pos-cmd <= axis.4.motor-pos-cmd
+net emcmot.04.pos-cmd => hm2_[HOSTMOT2](BOARD).0.stepgen.04.position-cmd 
+
+net motor.04.pos-fb <= hm2_[HOSTMOT2](BOARD).0.stepgen.04.position-fb
+net motor.04.pos-fb => axis.4.motor-pos-fb
+
+
+# timing parameters
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.dirsetup        [AXIS_4]DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.dirhold         [AXIS_4]DIRHOLD
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.steplen         [AXIS_4]STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.stepspace       [AXIS_4]STEPSPACE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.position-scale  [AXIS_4]SCALE
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.maxvel          [AXIS_4]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.maxaccel        [AXIS_4]STEPGEN_MAX_ACC# axis enable chain
+
+
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.04.step_type       0
+
+
+# ##################################################
+# Standard I/O Block - EStop, Etc
+# ##################################################
+
+# A basic estop loop that only includes the hostmot watchdog.
+net user-enable iocontrol.0.user-request-enable => estop-latch.0.reset
+net enable-latch estop-latch.0.ok-out => iocontrol.0.emc-enable-in
+net watchdog hm2_[HOSTMOT2](BOARD).0.watchdog.has_bit => estop-latch.0.fault-in
+
+# create signals for tool loading loopback
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
+
+
+
+# ##################################################
+# PWM and Temperature Signals
+# ##################################################
+
+# Define signals to use elsewhere (ie: M1xx codes)
+# If you change any names here, lots of things will break!
+newsig e0.temp.set   float
+newsig e0.temp.meas  float
+newsig bed.temp.set float
+newsig bed.temp.meas float
+
+# E0 Heater 
+#setp pwmgen.0.enable    1
+setp pwmgen.0.value     0.0
+net T_up pwmgen.0.pwm => hm2_5i25.0.7i76.0.0.output-15
+
+# Bed Heater
+#setp pwmgen.1.enable    1
+setp pwmgen.1.value     0.0
+net T_up2 pwmgen.1.pwm => hm2_5i25.0.7i76.0.0.output-14
+
+# FET 5 - Fan / LED
+setp pwmgen.2.enable    1
+setp pwmgen.2.value     0.0
+net fan0 pwmgen.2.pwm => hm2_5i25.0.0.7i76.0.0.output-07    
+
+# FET 6 - Fan / LED
+setp pwmgen.3.enable    1
+setp pwmgen.3.value     0.0
+net fan1 pwmgen.3.pwm => hm2_5i25.0.0.7i76.0.0.output-08     
+
+# PID for Extruder 0 temperature control
+
+net e0.temp.meas    <= temperature.T_uno 
+net e0.temp.meas    => pid.0.feedback
+
+sets e0.temp.set  0
+net e0.temp.set     => pid.0.command
+
+net e0.heater  <= pid.0.output
+net e0.heater  => limit1.0.in
+net e0.heaterl <= limit1.0.out
+net e0.heaterl => pwmgen.0.value
+
+# Limit heater PWM to positive values
+# PWM mimics hm2 implementation, which generates output for negative values
+setp limit1.0.min 0
+
+# PID for Bed temperature control
+
+net bed.temp.meas    <= temperature.T_zero 
+net bed.temp.meas    => pid.1.feedback
+
+sets bed.temp.set  0
+net bed.temp.set     => pid.1.command
+
+net bed.heater  <= pid.1.output
+net bed.heater  => limit1.1.in
+net bed.heaterl <= limit1.1.out
+net bed.heaterl => pwmgen.1.value
+
+# Limit heater PWM to positive values
+# PWM mimics hm2 implementation, which generates output for negative values
+setp limit1.1.min 0
+
+
+# PID Parameters for adjusting temperature control
+# Extruder
+#setp pid.0.FF0      0
+#setp pid.0.FF1      0
+#setp pid.0.FF2      0
+setp pid.0.Pgain  15.21
+setp pid.0.Igain  0.98
+setp pid.0.Dgain  58.82
+setp pid.0.maxerrorI 1.0
+setp pid.0.bias    0.5
+setp pid.0.enable   1
+
+# Bed
+#setp pid.1.FF0      0
+#setp pid.1.FF1      0
+#setp pid.1.FF2      0
+setp pid.1.Pgain  1
+setp pid.1.Igain  0.0
+setp pid.1.Dgain  0.0
+setp pid.1.maxerrorI 1.0
+setp pid.1.bias    0.5
+setp pid.1.enable   1
+
+
+######MISURARE GLI UTENSILI
+# estop loopback
+#net estop-loop iocontrol.0.user-enable-out iocontrol.0.emc-enable-in
+
+# create signals for tool loading loopback
+net tool-prep-loop iocontrol.0.tool-prepare iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change iocontrol.0.tool-changed
+
+
+#net probe  motion.probe-input  parport.0.pin-13-in
+# connect pin 12 to Z home and min limit
+#net Z-home parport.0.pin-12-in => axis.2.home-sw-in axis.2.neg-lim-sw-in 
+
+
+######### LIMIT SWITCHES ####################
+
+# Z-probe NO
+#setp hm2_5i25.0.7i76.0.0.output-04 1
+#net probe       motion.probe-input  hm2_5i25.0.7i76.0.0.input-11
+
+# ##################################################
+# Standard I/O - EStop, Enables, Limit Switches, Etc
+# ##################################################
+
+# Create estop signal chain
+# Drive software estop to hardware
+#net estop-out iocontrol.0.user-enable-out => hm2_5i25.0.7i76.0.output.00
+#setp hm2_5i25.0.7i76.0.output.00 1
+
+# Monitor estop input from hardware
+#net estop-loop hm2_5i25.0.7i76.0.input.00 => iocontrol.0.emc-enable-in
+#setp hm2_5i25.0.7i76.0.input.00-invert
+
+# create signals for tool loading loopback
+#net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+#net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
+
+# Axis enable signal (active low)
+#net emcmot.00.enable => bb_gpio.p9.out-14
+#setp bb_gpio.p9.out-14.invert 1
+
+# Machine power
+# Use halui.machine.is-on instead?
+#net emcmot.00.enable => bb_gpio.p9.out-23
+
+# Tie machine power signal to the CRAMPS LED
+# Feel free to tie any other signal you like to the LED
+#net emcmot.00.enable => bb_gpio.p9.out-25
+
+# ################
+# Limit Switches
+# ################
+newsig limit-x-min bit
+newsig limit-x-max bit
+newsig limit-y-min bit
+newsig limit-y-max bit
+newsig limit-z-min bit
+newsig limit-z-max bit
+
+#net limit-x-min <= hm2_5i25.0.7i76.0.0.input-01-not
+#net limit-x-max <= 
+#net limit-y-min <= 
+net limit-y-max <= hm2_5i25.0.7i76.0.0.input-02-not
+net limit-z-min <= hm2_5i25.0.7i76.0.0.input-11
+#net limit-z-max <= 
+
+# Adjust as needed for your switch polarity
+setp hm2_5i25.0.7i76.0.0.output-00 1
+setp hm2_5i25.0.7i76.0.0.output-01 1
+setp hm2_5i25.0.7i76.0.0.output-02 1
+setp hm2_5i25.0.7i76.0.0.output-03 1
+setp hm2_5i25.0.7i76.0.0.output-04 1
+setp hm2_5i25.0.7i76.0.0.output-05 1
+setp hm2_5i25.0.7i76.0.0.output-06 1
+setp hm2_5i25.0.7i76.0.0.output-07 1
+
+# Uncomment if you actually have limit switches setup
+# You probably want to setup homing in the INI file, as well
+net limit-x-min => axis.0.home-sw-in
+net limit-x-min => axis.0.neg-lim-sw-in
+#net limit-x-max => axis.0.pos-lim-sw-in
+net limit-y-max => axis.1.home-sw-in
+#net limit-y-min => axis.1.neg-lim-sw-in
+net limit-y-max => axis.1.pos-lim-sw-in
+net limit-z-min => axis.2.home-sw-in
+net limit-z-min => axis.2.neg-lim-sw-in
+#net limit-z-max => axis.2.pos-lim-sw-in
+
+
+#####SPINDLE#########
+
+# Set the spindle's top speed in RPM
+
+
+
+setp scale.0.offset  4.4
+setp scale.0.gain    -0.0366666666666666
+net spindle-speed-scale motion.spindle-speed-out  	=> 		scale.0.in
+net spindle-speed-cmd   scale.0.out               	=> 		hm2_5i25.0.7i76.0.0.spinout
+net spindle-on 	    	motion.spindle-on 		=> 		hm2_5i25.0.7i76.0.0.spinena
+
+#setp gmoccapy.spindle-override.analog-enable 1
+
+
+#net spindle-on =>  gmoccapy.spindle-override.analog-enable
+#gmoccapy.spindle-override.count-enable
+#gmoccapy.spindle-override.counts
+#net spindle-pwm => gmoccapy.spindle-override.direct-value
+
+#### SPINDLE 7i76
+
+setp   hm2_5i25.0.7i76.0.0.spinout-minlim    [SPINDLE_9]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i76.0.0.spinout-maxlim    [SPINDLE_9]OUTPUT_MAX_LIMIT
+setp   hm2_5i25.0.7i76.0.0.spinout-scalemax  [SPINDLE_9]OUTPUT_SCALE
+setp   hm2_5i25.0.7i76.0.0.spindir-invert    false
+
+# attivo il pin dell'uscita analogica della 7i76 e ativando l'output 2 levo i 5 volt al "servo tester" tramite relay
+#setp   hm2_5i25.0.7i76.0.0.spinena           true
+#setp   hm2_5i25.0.7i76.0.0.output-01         1
+#net test-5Von-spindleoff hm2_5i25.0.7i76.0.0.output-01 not motion.spindle-on
+
+#net spindle-vel-cmd     => hm2_5i25.0.7i76.0.0.spinout
+#net spindle-on          => hm2_5i25.0.7i76.0.0.spinena
+#net spindle-ccw         => hm2_5i25.0.7i76.0.0.spindir
+
+
+
+
+
+
+
