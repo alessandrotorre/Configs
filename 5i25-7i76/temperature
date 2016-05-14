@@ -17,6 +17,8 @@ h = hal.component("temperature")
 h.newpin("T_ambiente",		 hal.HAL_FLOAT, hal.HAL_IN)
 h.newpin("T_zero",		 hal.HAL_FLOAT, hal.HAL_IN)
 h.newpin("T_uno",		 hal.HAL_FLOAT, hal.HAL_IN)
+h.newpin("T_due",		 hal.HAL_FLOAT, hal.HAL_IN)
+h.newpin("T_tre",		 hal.HAL_FLOAT, hal.HAL_IN)
 h.ready()	
 
 
@@ -68,10 +70,14 @@ while(1):	#print("Sensitivity of thermocouple index 0 is now %f" % (temperatureS
 	Tambiente = temperatureSensor.getAmbientTemperature()
 	Tzero = temperatureSensor.getTemperature(0)
 	Tuno = temperatureSensor.getTemperature(1)
+	Tdue = temperatureSensor.getTemperature(2)
+	Ttre = temperatureSensor.getTemperature(3)
 	sleep(0.2)
 	h.T_ambiente=Tambiente
 	h.T_zero=Tzero
 	h.T_uno=Tuno
+	h.T_due=Tdue
+	h.T_tre=Ttre
 	#print("T0:%.1f   T1:%.1f  T_ambiente:%.1f\n" % (h.T_zero,h.T_uno,h.T_ambiente))
 	
 	#chr = sys.stdin.read(1)
