@@ -1,0 +1,102 @@
+//   This is a component for EMC2 HAL
+//   Copyright 2016 Alessandro Torre <alessandro.torrebo@gmail.com>
+//
+//   This program is free software; you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation; either version 2 of the License, or
+//   (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+//
+//   You should have received a copy of the GNU General Public License
+//   along with this program; if not, write to the Free Software
+//   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+component VelocityExtruder "Compute the position of the 4th axis related to the cross section area of the xy trajectory";
+
+//#include <math.h>
+
+param rw float Nozzle;
+param rw float AreaFilamento;
+param rw float Altezza_layer;
+param rw float Vretraction;
+param rw float Vprecharge;
+param rw float precharge_mm;
+param rw float retraction_mm;
+
+pin in bit enable;
+pin in float Vx;
+pin in float Vy;
+pin in float Acc_x;
+pin in float Acc_y;
+pin in float Apos;
+pin io float Va;
+pin io float Acc_a;
+pin in bit retraction;
+pin in bit precharge;
+pin in float K;         //fattore correzione estrusione
+pin io float A; 
+pin out float retraction_done;
+pin out float precharge_done;
+pin out float Apos_fixed;
+
+//pin in float Altezza_layer;
+//pin in float AreaFilamento;
+//pin io float Nozzle;
+variable float Vxy;
+variable float Acc_xy;
+variable float Vel_volume_estruso;  //[m3/s]
+variable float Acc_volume_estruso;  //[mm3/s2]
+
+function _;
+license "GPL";
+;;
+#include <rtapi_math.h>
+FUNCTION(_){
+
+// Se il componente è abilitato dal pin enable ( enable == 1 ) e se non è abilitata la funzione di precharge o di retraction, calola la velocità di estrusione 
+if (Apos=0){
+  A=0;
+  }
+if (enable==1){
+	Vxy=sqrt(Vx*Vx+Vy*Vy);					//calcolo la velocità assoluta del nozzle Vxy
+	Acc_xy=sqrt(Acc_x*Acc_x+Acc_y*Acc_y);			//calcolo dell'accelerazione assoluta del nozzle Acc_xy
+	Area_u=Altezza_layer*Nozzle;				//Area di uscita [mm2]
+	Va=Vxy*Area_u/AreaFilamento;				//calcolo della velocità di estrusione [mm/s]
+	Acc_a=Acc_xy*Area_u/AreaFilamento;    			//calcolo della accelerazione di estrusione [mm/s2] 
+	A=A+Va*fperiod+K*Acc_a*fperiod*fperiod;			//calcolo della posizione di estrusione [mm] che comanderà il 4° asse A
+	}
+if (retraction==1){
+	if (Apos>=Apos_fixed)
+	    Apos_fixed=Apos;
+	if ( Apos > (Apos_fixed-retraction_mm) ){
+		//filament_retracted = filament_retracted+Vretraction*fperiod/1000000000;
+		Va=-Vretraction;
+		A=A+Va*fperiod;
+		retraction_done=0;
+	}
+	else {
+		Va=0;
+		retraction_done=1;
+	  
+	}
+	}
+if (precharge==1){
+	if (Apos<=Apos_fixed)
+	    Apos_fixed=Apos;
+	if ( Apos < (Apos_fixed+precharge_mm ) ){
+		//filament_precharged = filament_precharged+Vprecharge*fperiod/1000000000;
+		Va=Vprecharge;
+		A=A+Va*fperiod;
+		precharge_done=0;
+	}
+	else{
+		Va=0;
+		precharge_done=1;
+	}
+}
+
+}
+
