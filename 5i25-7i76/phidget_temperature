@@ -13,7 +13,7 @@ from Phidgets.Phidget import PhidgetLogLevel
 import hal 
 import time
 
-h = hal.component("temperature")
+h = hal.component("phidget_temperature")
 h.newpin("T_ambiente",		 hal.HAL_FLOAT, hal.HAL_IN)
 h.newpin("T_zero",		 hal.HAL_FLOAT, hal.HAL_IN)
 h.newpin("T_uno",		 hal.HAL_FLOAT, hal.HAL_IN)
