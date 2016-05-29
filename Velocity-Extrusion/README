@@ -25,7 +25,7 @@ EMBED_TAB_NAME=3D Printing I5D
 #IF GMOCAPPY decomment the next line
 #EMBED_TAB_LOCATION = box_coolant_and_spindle  
 EMBED_TAB_LOCATION = ntb_preview
-EMBED_TAB_COMMAND= gladevcp -x {XID} -H guiVelExtr.hal ./guiVelExtr.ui
+EMBED_TAB_COMMAND= gladevcp -x {XID} -H VelExtr.hal ./guiVelExtr.ui
 
 9)add the postprocessor for the CURA in the cura plugin folder. 
 In VE_cura_postprocessor I used an infill of 1.9 instead of 1, because cross the section at 45 or -45 was wrong in my opinion. If u want you can change that parameter at line
