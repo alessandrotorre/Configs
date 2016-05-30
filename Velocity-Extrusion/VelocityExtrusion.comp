@@ -1,22 +1,9 @@
 //   This is a component for EMC2 HAL
 //   Copyright 2016 Alessandro Torre <alessandro.torrebo@gmail.com>
-//
-//   This program is free software; you can redistribute it and/or modify
-//   it under the terms of the GNU General Public License as published by
-//   the Free Software Foundation; either version 2 of the License, or
-//   (at your option) any later version.
-//
-//   This program is distributed in the hope that it will be useful,
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//   GNU General Public License for more details.
-//
-//   You should have received a copy of the GNU General Public License
-//   along with this program; if not, write to the Free Software
 //   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-component VelocityExtrusion "Compute the position of the 4th axis related to the cross section area of the xy trajectory";
+component VelocityExtrusion "Compute the position of the 4th axis related to the cross section area of the xy trajectory, the velocity of the Nozzle in the cartesian plane and its acceleration";
 
-//#include <math.h>
+
 // FROM GUI
 pin in float Nozzle;
 pin in float Diametro_Filamento;
@@ -34,7 +21,7 @@ pin in float Acc_xy;
 pin in float Apos;
 
 
-// A=[mm] is the position, Va=[mm/s] Acc_a=[mm2/s]
+// A=[mm] extruder position, Va=[mm/s] Extruder Velocity Acc_a=[mm2/s] Extruder Acceleration
 pin out float A; 
 pin out float Va;
 pin out float Acc_a;
@@ -50,11 +37,11 @@ pin out bit isenabled;		//LED
 
 //Debug
 pin out float AreaFilamento;
-pin out float Apos_fixed;
-pin out float A_debug;
-pin out float A1_debug;
-pin out float A2_debug;
-pin out float Area_u; 			 //Area della sezione trasversale dopo l'estrusione [mm2] 
+pin out float Apos_fixed;       // Posizione relativa della coordinata A al momento precedente alla retraction o al precharge       
+pin out float A_debug;		// posizione cumulativa senza la componente accelerazione
+pin out float A1_debug;		// Posizione non cumulativa senza la componente dell'accelerazione
+pin out float A2_debug;		// Posizione non cumulativa con la componente accelerazione
+pin out float Area_u; 		//Area di uscita.Area della sezione trasversale dopo l'estrusione [mm2] 
 
 
 // LEGGENDA del pin "status" FROM MCODE
@@ -74,9 +61,8 @@ license "GPL";
 FUNCTION(_){
 Nozzle_out=Nozzle;
 Altezza_layer_out=Altezza_layer;
-//pin enable da attivare dall'esterno per visualizzare tramite "isenable" quando si linka il componente velocity extrusion alla posizione della coordinata A
 
-// Riceve in input lo stato 
+// Riceve in input lo status 
 // LEGGENDA del pin "status" FROM MCODE
 // 0 not enable
 // 1 enable
